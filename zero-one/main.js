@@ -22,6 +22,9 @@ var states = {
             game.load.image('three', '//24haowan-cdn.shanyougame.com/pickApple2/assets/images/three.png');
             game.load.image('one', '//24haowan-cdn.shanyougame.com/pickApple2/assets/images/one.png');
             game.load.audio('bgMusic', '//24haowan-cdn.shanyougame.com/pickApple2/assets/audio/bgMusic.mp3');
+            game.load.audio('bgMusic', '//24haowan-cdn.shanyougame.com/pickApple2/assets/audio/bgMusic.mp3');
+            game.load.audio('scoreMusic', '//24haowan-cdn.shanyougame.com/pickApple2/assets/audio/addscore.mp3');
+            game.load.audio('bombMusic', '//24haowan-cdn.shanyougame.com/pickApple2/assets/audio/boom.mp3');
             //添加进度文字
             var progressText = game.add.text(game.world.centerX, game.world.centerY, '0%', {
                 fontSize: '60px',
@@ -84,11 +87,63 @@ var states = {
     },
     play: function () {
         this.create = function () {
-            //TODO
-            game.stage.backgroundColor = '#444';
-            setTimeout(function () {
-                game.state.start('over');
-            }, 3000);
+            // 得分
+            var score = 0;
+            // 添加背景音乐
+            var bgMusic = game.add.audio('bgMusic');
+            bgMusic.loopFull();
+            // 缓存其他音乐
+            var scoreMusic = game.add.audio('scoreMusic');
+            var bombMusic = game.add.audio('bombMusic');
+            // 添加背景
+            var bg = game.add.image(0, 0, 'bg');
+            bg.width = game.world.width;
+            bg.height = game.world.height;
+            // 添加主角
+            var man = game.add.sprite(game.world.centerX, game.world.height * 0.75, 'dude');
+            var manImage = game.cache.getImage('dude');
+            man.width = game.world.width * 0.2;
+            man.height = man.width / manImage.width * manImage.height;
+            man.anchor.setTo(0.5, 0.5);
+            // 添加分数
+            var title = game.add.text(game.world.centerX, game.world.height * 0.25, '0', {
+                fontSize: '40px',
+                fontWeight: 'bold',
+                fill: '#f2bb15'
+            });
+            title.anchor.setTo(0.5, 0.5);
+            // 是否正在触摸
+            var touching = false;
+            // 监听按下事件
+            game.input.onDown.add(function (pointer) {
+                // 要判断是否点住主角，避免瞬移
+                if (Math.abs(pointer.x - man.x) < man.width / 2) touching = true;
+            });
+            // 监听离开事件
+            game.input.onUp.add(function () {
+                touching = false;
+            });
+            // 监听滑动事件
+            game.input.addMoveCallback(function (pointer, x, y, isTap) {
+                if (!isTap && touching) man.x = x;
+            });
+            // 添加苹果组
+            var apples = game.add.group();
+            // 苹果类型
+            var appleTypes = ['green', 'red', 'yellow'];
+            var appleTimer = game.time.create(true);
+            appleTimer.loop(1000, function () {
+                var x = Math.random() * game.world.width;
+                var type = appleTypes[Math.floor(Math.random() * appleTypes.length)];
+                var apple = apples.create(x, 0, type);
+                var appleImg = game.cache.getImage(type);
+                apple.width = game.world.width / 8;
+                apple.height = apple.width / appleImg.width * appleImg.height;
+                game.physics.enable(apple);
+            });
+            appleTimer.start();
+            game.physics.startSystem(Phaser.Physics.Arcade);
+            game.physics.arcade.gravity.y = 300;
         }
     },
     over: function () {
