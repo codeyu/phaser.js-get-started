@@ -86,9 +86,16 @@ var states = {
         }
     },
     play: function () {
+        var man; // 主角
+        var apples; // 苹果
+        var score = 0; // 得分
+        var title; // 分数
         this.create = function () {
             // 得分
-            var score = 0;
+            score = 0;
+            // 开启物理引擎
+            game.physics.startSystem(Phaser.Physics.Arcade);
+            game.physics.arcade.gravity.y = 300;
             // 添加背景音乐
             var bgMusic = game.add.audio('bgMusic');
             bgMusic.loopFull();
@@ -100,13 +107,15 @@ var states = {
             bg.width = game.world.width;
             bg.height = game.world.height;
             // 添加主角
-            var man = game.add.sprite(game.world.centerX, game.world.height * 0.75, 'dude');
+            man = game.add.sprite(game.world.centerX, game.world.height * 0.75, 'dude');
             var manImage = game.cache.getImage('dude');
             man.width = game.world.width * 0.2;
             man.height = man.width / manImage.width * manImage.height;
             man.anchor.setTo(0.5, 0.5);
+            game.physics.enable(man); // 加入物理运动
+            man.body.allowGravity = false; // 清除重力影响
             // 添加分数
-            var title = game.add.text(game.world.centerX, game.world.height * 0.25, '0', {
+            title = game.add.text(game.world.centerX, game.world.height * 0.25, '0', {
                 fontSize: '40px',
                 fontWeight: 'bold',
                 fill: '#f2bb15'
@@ -128,7 +137,7 @@ var states = {
                 if (!isTap && touching) man.x = x;
             });
             // 添加苹果组
-            var apples = game.add.group();
+            apples = game.add.group();
             // 苹果类型
             var appleTypes = ['green', 'red', 'yellow'];
             var appleTimer = game.time.create(true);
@@ -144,6 +153,16 @@ var states = {
             appleTimer.start();
             game.physics.startSystem(Phaser.Physics.Arcade);
             game.physics.arcade.gravity.y = 300;
+
+        }
+        this.update = function() {
+        	// 监听接触事件
+            game.physics.arcade.overlap(man, apples, pickApple, null, this);
+        }
+        // 接触事件
+        function pickApple(man, apple) {
+            apple.kill();
+            title.text = ++score;
         }
     },
     over: function () {
