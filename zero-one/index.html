@@ -1,0 +1,62 @@
+﻿<html>
+
+<head>
+    <script src="https://cdn.bootcss.com/phaser-ce/2.11.1/phaser.min.js"></script>
+</head>
+
+<body>
+    <div id="game"></div>
+    <script>
+        //定义游戏画布的宽和高
+        var width = window.innerWidth;
+        var height = window.innerHeight;
+        //创建游戏实例
+        var game = new Phaser.Game(width, height, Phaser.AUTO, '#game');
+        //定义场景
+        var states = {
+            //加载场景
+            preload: function () { 
+                this.create = function(){
+                    //TODO
+                    game.stage.backgroundColor = '#aaa';
+                    setTimeout(function(){
+                        game.state.start('created');
+                    }, 3000);
+                }
+            },
+            created: function () { 
+                this.create = function(){
+                    //TODO
+                    game.stage.backgroundColor = '#777';
+                    setTimeout(function(){
+                        game.state.start('play');
+                    }, 3000);
+                }
+            },
+            play: function () { 
+                this.create = function(){
+                    //TODO
+                    game.stage.backgroundColor = '#444';
+                    setTimeout(function(){
+                        game.state.start('over');
+                    }, 3000);
+                }
+            },
+            over: function () { 
+                this.create = function(){
+                    //TODO
+                    game.stage.backgroundColor = '#000';
+                    alert('游戏结束！');
+                }
+            }
+        };
+        //添加场景到游戏实例中
+        Object.keys(states).map(function (key) {
+            game.state.add(key, states[key]);
+        });
+        //启动游戏
+        game.state.start('preload');
+    </script>
+</body>
+
+</html>
